@@ -1,0 +1,291 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>demoKakaoMsgApi</groupId>
+  <artifactId>demoKakaoMsgApi</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <build>
+  <defaultGoal>install</defaultGoal>
+  <!-- https://developerhjg.tistory.com/13 -->
+    <!--sourceDirectory>src</sourceDirectory  -->
+  	<plugins>
+      <plugin>
+      	<groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <classpathPrefix>lib/</classpathPrefix>
+              <classpathLayoutType>repository</classpathLayoutType>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      
+  <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.6.1</version>
+        <configuration>
+          <verbose>true</verbose>
+          <fork>true</fork>
+          <executable><!-- path-to-javac --></executable>
+          <compilerVersion>1.8</compilerVersion>
+          <encoding>UTF-8</encoding>    
+        </configuration>
+      </plugin>
+      <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>copy-dependencies</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>copy-dependencies</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        <overWriteReleases>false</overWriteReleases>
+                        <overWriteSnapshots>false</overWriteSnapshots>
+                        <overWriteIfNewer>true</overWriteIfNewer>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+
+
+<!-- 출처: https://brocess.tistory.com/148 [행복한디벨로퍼]  
+test클래스 통과
+ -->        
+        <plugin> 
+        <groupId>org.apache.maven.plugins</groupId> 
+        <artifactId>maven-surefire-plugin</artifactId> 
+        <configuration> 
+        <skipTests>true</skipTests> 
+        </configuration> 
+        </plugin>
+        
+<!--
+        메이븐 dependency jar 를 포함하여 빌드하기
+		출처: https://effortmakesme.tistory.com/137 [노력이 나를 만든다.]
+-->
+        <plugin>
+			<artifactId>maven-assembly-plugin</artifactId>
+			<version>3.3.0</version>
+			<configuration>
+			 
+				<descriptorRefs>
+				<descriptorRef>jar-with-dependencies</descriptorRef>
+				</descriptorRefs>
+				 
+				<!-- 이건 그냥 jar의 메인 클래스 지정하는것입니다. -->
+				<!-- 그냥 올려봤습니다... 
+				<archive>
+				<mainClass>패키지를 포함한 클래스 전체이름</mainClass>
+				</manifest>
+				
+				</archive>
+				-->
+			</configuration>
+			 
+			<executions>
+			<execution>
+			<id>make-assembly</id>
+			<phase>package</phase>
+			<goals>
+			<goal>single</goal>
+			</goals>
+			</execution>
+			</executions>
+</plugin>
+
+        
+        
+        
+        
+        
+
+<plugin>
+<!-- https://www.dbility.com/40 -->
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>3.0.0</version>
+    <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.apache.ant/ant-jsch -->
+		<dependency>
+		    <groupId>org.apache.ant</groupId>
+		    <artifactId>ant-jsch</artifactId>
+		    <version>1.10.11</version>
+		</dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.jcraft/jsch -->
+		<dependency>
+		    <groupId>com.jcraft</groupId>
+		    <artifactId>jsch</artifactId>
+		    <version>0.1.55</version>
+		</dependency>
+
+    </dependencies>
+    <executions>
+        <execution>
+         	<id>라이브러리복사</id>
+            <phase>install</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <target>
+                    <!-- scp file="${project.basedir}\target\${project.artifactId}-${project.version}-jar-with-dependencies.jar"
+                        todir="${scp.user}:${scp.password}@${scp.host}:${scp.dirCopyTo}" trust="true" / -->
+                        
+                        <scp file="${project.basedir}\target\${project.artifactId}-${project.version}-jar-with-dependencies.jar"
+                        remoteTofile="${scp.user}:${scp.password}@${scp.host}:${scp.dirCopyTo}/${project.artifactId}.jar" trust="true" />
+                </target>
+            </configuration>
+        </execution>
+        
+         <execution>
+         	<id>서버재시작</id>
+            <phase>install</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+                <target>
+				        <sshexec host="${scp.host}" username="${scp.user}" password="${scp.password}" trust="true"
+				         timeout="20000" failonerror="true" command="sudo service autoTomcat restart" />
+				</target>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+
+
+    </plugins>
+  </build>
+  <dependencies>
+	<!-- https://mvnrepository.com/artifact/junit/junit -->
+	<!-- 
+	<dependency>
+	    <groupId>junit</groupId>
+	    <artifactId>junit</artifactId>
+	    <version>4.13.2</version>
+	    <scope>test</scope>
+	</dependency>
+	-->
+	
+	<!-- https://mvnrepository.com/artifact/com.auth0/java-jwt -->
+	<dependency>
+	    <groupId>com.auth0</groupId>
+	    <artifactId>java-jwt</artifactId>
+	    <version>3.18.1</version>
+	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
+	<dependency>
+	    <groupId>com.google.code.gson</groupId>
+	    <artifactId>gson</artifactId>
+	    <version>2.8.7</version>
+	</dependency>
+	
+	
+	<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+	<dependency>
+	    <groupId>org.apache.httpcomponents</groupId>
+	    <artifactId>httpclient</artifactId>
+	    <version>4.5.13</version>
+	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/org.json/json -->
+	<dependency>
+	    <groupId>org.json</groupId>
+	    <artifactId>json</artifactId>
+	    <version>20210307</version>
+	</dependency>
+	
+	
+	<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-core</artifactId>
+    <version>2.12.4</version>
+</dependency>
+	
+	
+	<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+<dependency>
+    <groupId>com.fasterxml.jackson.core</groupId>
+    <artifactId>jackson-databind</artifactId>
+    <version>2.12.4</version>
+</dependency>
+	
+<!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+<dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter-api</artifactId>
+    <version>5.7.2</version>
+    <scope>test</scope>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/junit/junit -->
+<dependency>
+    <groupId>junit</groupId>
+    <artifactId>junit</artifactId>
+    <version>4.13.2</version>
+    <scope>test</scope>
+</dependency>
+
+<dependency>
+<groupId>bizactor</groupId>
+<artifactId>dataset</artifactId>
+<scope>system</scope>
+<version>1</version>
+<systemPath>${project.basedir}/libs/bizactor.dataset.jar</systemPath>
+</dependency>
+
+<dependency>
+<groupId>bizactor</groupId>
+<artifactId>server</artifactId>
+<scope>system</scope>
+<version>1</version>
+<systemPath>${project.basedir}/libs/bizactor.server.jar</systemPath>
+</dependency>
+
+<dependency>
+<groupId>bizactor</groupId>
+<artifactId>framework</artifactId>
+<scope>system</scope>
+<version>1</version>
+<systemPath>${project.basedir}/libs/framework.jar</systemPath>
+</dependency>
+
+
+<!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-antrun-plugin -->
+<!-- scp -->
+<dependency>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-antrun-plugin</artifactId>
+    <version>3.0.0</version>
+</dependency>
+
+
+
+
+	</dependencies>
+<properties>
+  <maven.compiler.source>1.8</maven.compiler.source>
+  <maven.compiler.target>1.8</maven.compiler.target>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> 
+  <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  
+  <scp.user>jijs</scp.user>
+  <scp.password>admin</scp.password>
+  <scp.host>192.168.0.13</scp.host>
+  <scp.dirCopyTo>/home/jijs/BizActor/Deployments/bizactor.war/WEB-INF/lib</scp.dirCopyTo>
+ 
+  
+</properties>
+
+</project>
