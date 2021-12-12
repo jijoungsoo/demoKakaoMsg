@@ -13,8 +13,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
@@ -22,11 +22,46 @@ import org.apache.http.util.EntityUtils;
 
 import com.example.framework.exception.BizException;
 import com.example.framework.utils.PjtUtil;
-import com.google.gson.Gson;
 
 public class HttpUtilKakao {
 
-    public String httpPostUpbitExchangeApi(String KAKAO_API_ACCESS_KEY,String URL,  HashMap<String, String> params) throws URISyntaxException, ClientProtocolException, IOException, NoSuchAlgorithmException, com.example.framework.exception.BizException{
+
+    public String httpGetKakaoApi(String URL, String QueryString)
+        throws URISyntaxException, ClientProtocolException, IOException, NoSuchAlgorithmException, BizException {
+        String rtn = "";
+        try {
+
+            if (!PjtUtil.g().isEmpty(QueryString)) {
+                URL = URL + "?" + QueryString;
+            }
+
+            CloseableHttpClient client = HttpClientBuilder.create().build();
+            HttpGet request = new HttpGet(URL);
+            // request.setHeader("Content-Type", "application/json");
+            HttpResponse response = client.execute(request);
+            org.apache.http.HttpEntity entity = response.getEntity();
+            rtn = EntityUtils.toString(entity, "UTF-8");
+            int status_code = response.getStatusLine().getStatusCode();
+            System.out.println("status_code=>" + status_code);
+            System.out.println("URL=>" + URL);
+            System.out.println("QueryString=>" + QueryString);
+            System.out.println("rtn=>" + rtn);
+            if (status_code >= 400 && status_code < 500) {
+                // 에러
+                /*
+                * Object error String error.name String error.message
+                * {"error":{"message":"권한이 부족합니다.","name":"out_of_scope"}}
+                */
+                throw new com.example.framework.exception.BizException(rtn);
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return rtn;
+    }
+    public String httpPostKakaoApi(String KAKAO_API_ACCESS_KEY,String URL,  HashMap<String, String> params) throws URISyntaxException, ClientProtocolException, IOException, NoSuchAlgorithmException, com.example.framework.exception.BizException{
         String rtn="";
         String authenticationToken = "Bearer " + KAKAO_API_ACCESS_KEY;
 
